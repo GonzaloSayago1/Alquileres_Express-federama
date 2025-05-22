@@ -1,0 +1,102 @@
+@page "/usuario"
+@rendermode InteractiveServer
+
+@inject NavigationManager Navegador;
+@inject CasoDeUsoRegistrarUsuario casoDeUsoRegistrarUsuario
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger">@ErrorMessage</div>
+}
+
+<div class="mb-2">
+    <label>Nombre</label>
+    <input @bind="_usuario.nombre" class="form-control" />
+</div>
+<div class="mb-2">
+    <label>Apellido</label>
+    <input @bind="_usuario.apellido" class="form-control" />
+</div>
+<div class="mb-2">
+    <label>Correo</label>
+    <input @bind="_usuario.correo" class="form-control" />
+</div>
+<div class="mb-2">
+    <label>Contraseña</label>
+    <input @bind="_usuario.contraseña" type="password" class="form-control" />
+</div>
+<div class="mb-2">
+    <label>Dirección</label>
+    <input @bind="_usuario.direccion" class="form-control" />
+</div>
+
+<div class="mb-2">
+    <label>Fecha de Nacimiento</label>
+    <div class="d-flex">
+        <select class="form-select me-1" @bind="selectedDay">
+            <option value="">Día</option>
+            @foreach (var d in Enumerable.Range(1,31))
+            {
+                <option value="@d">@d</option>
+            }
+        </select>
+        <select class="form-select me-1" @bind="selectedMonth">
+            <option value="">Mes</option>
+            @foreach (var m in Enumerable.Range(1,12))
+            {
+                <option value="@m">@m</option>
+            }
+        </select>
+        <select class="form-select" @bind="selectedYear">
+            <option value="">Año</option>
+            @foreach (var y in Enumerable.Range(DateTime.Now.Year - 100, 101).Reverse())
+            {
+                <option value="@y">@y</option>
+            }
+        </select>
+    </div>
+</div>
+
+<button class="btn btn-primary" @onclick="Aceptar">Aceptar</button>
+
+@code {
+    private Usuario _usuario = new Usuario();
+    private string ErrorMessage;
+
+    private int? selectedDay;
+    private int? selectedMonth;
+    private int? selectedYear;
+
+    private async Task Aceptar()
+    {
+        ErrorMessage = null;
+        if (selectedDay == null || selectedMonth == null || selectedYear == null)
+        {
+            ErrorMessage = "Por favor seleccioná día, mes y año de nacimiento.";
+            return;
+        }
+
+        try
+        {
+            _usuario.fechaNacimiento = new DateTime(
+                selectedYear.Value,
+                selectedMonth.Value,
+                selectedDay.Value
+            );
+
+            casoDeUsoRegistrarUsuario.Ejecutar(_usuario);
+
+            _usuario = new Usuario();
+            selectedDay = selectedMonth = selectedYear = null;
+            Navegador.NavigateTo("listadoUsuario");
+        }
+        catch (InvalidOperationException ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Ocurrió un error inesperado: " + ex.Message;
+        }
+    }
+}
