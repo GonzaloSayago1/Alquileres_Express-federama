@@ -35,27 +35,41 @@ public class RepositorioUsuarioMock : IRepositorioUsuario
         };
     }
     public void RegistrarUsuario(Usuario u)
-{
-    
-    if (_listaUsuarios.Any(aux => aux.correo == u.correo))
-        throw new InvalidOperationException("El correo ya está registrado por otro usuario.");
+    {
+        verificarCampos(u);
+        if (_listaUsuarios.Any(aux => aux.correo == u.correo))
+            throw new InvalidOperationException("El correo ya está registrado por otro usuario.");
 
-    if (u.contraseña.Length < 6)
-        throw new InvalidOperationException("La contraseña debe tener 6 o más dígitos.");
-    //Calcular edad
-    var today = DateTime.Today;
-    int edad = today.Year - u.fechaNacimiento.Year;
-    if (u.fechaNacimiento > today.AddYears(-edad))
-        edad--;
+        if (u.contraseña.Length < 6)
+            throw new InvalidOperationException("La contraseña debe tener 6 o más dígitos.");
+        //Calcular edad
+        var today = DateTime.Today;
+        int edad = today.Year - u.fechaNacimiento.Year;
+        if (u.fechaNacimiento > today.AddYears(-edad))
+            edad--;
 
-    if (edad < 18)
-        throw new InvalidOperationException("El usuario debe ser mayor de edad.");
+        if (edad < 18)
+            throw new InvalidOperationException("El usuario debe ser mayor de edad.");
+        u.ID = _proximoId++;
+        u.contraseña = hash(u.contraseña);
+        _listaUsuarios.Add(Clonar(u));
+        }
 
-    u.ID = _proximoId++;
-    u.contraseña = hash(u.contraseña);
-    _listaUsuarios.Add(Clonar(u));
-}
-
+    private void verificarCampos(Usuario u)
+    {
+        if (string.IsNullOrWhiteSpace(u.nombre))
+            throw new InvalidOperationException("El nombre es obligatorio.");
+        if (string.IsNullOrWhiteSpace(u.apellido))
+            throw new InvalidOperationException("El apellido es obligatorio.");
+        if (string.IsNullOrWhiteSpace(u.correo))
+            throw new InvalidOperationException("El correo es obligatorio.");
+        if (string.IsNullOrWhiteSpace(u.contraseña))
+            throw new InvalidOperationException("La contraseña es obligatoria.");
+        if (string.IsNullOrWhiteSpace(u.direccion))
+            throw new InvalidOperationException("La dirección es obligatoria.");
+        if (!u.correo.Contains("@") || !u.correo.EndsWith(".com", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("El correo no es válido");
+    }
     private string hash(string Contraseña)
     {
         using var sha256 = SHA256.Create();

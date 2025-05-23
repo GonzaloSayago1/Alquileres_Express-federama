@@ -18,7 +18,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     options.AccessDeniedPath = "/";
     options.LoginPath = "/login";
 
-});
+}); 
 
 builder.Services.AddTransient<CasoDeUsoRegistrarUsuario>();
 builder.Services.AddTransient<CasoDeUsoListarUsuario>();
